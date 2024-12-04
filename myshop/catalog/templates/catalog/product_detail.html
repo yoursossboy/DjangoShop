@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ product.name }}</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Шапка сайта */
+        header {
+            background-color: #343a40;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between; /* Размещение элементов по краям */
+            align-items: center;
+            position: fixed; /* Фиксируем шапку */
+            top: 0; /* Прикрепляем к верхней части */
+            left: 0; /* Растягиваем на всю ширину */
+            right: 0;
+            z-index: 1000; /* Поверх других элементов */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Тень под шапкой */
+        }
+
+        header h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .btn-cart {
+            background-color: #f1c40f;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 16px;
+            display: inline-block;
+        }
+
+        .btn-cart:hover {
+            background-color: #f39c12;
+        }
+
+        /* Добавляем отступ сверху для содержимого, чтобы шапка не перекрывала его */
+        main {
+            margin-top: 50px; /* Отступ для учета высоты шапки */
+            padding: 20px;
+        }
+
+        /* Стили для кнопки */
+        .btn-add {
+            background-color: #57c257;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            margin-top: 10px;
+            display: block;
+        }
+
+        .btn-add:hover {
+            background-color: #43b143;
+        }
+
+        .btn-back {
+            background-color: #d55d4d;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            margin-top: 10px;
+            display: block;
+        }
+
+        .btn-back:hover {
+            background-color: #b04234;
+        }
+
+        footer {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            position: fixed; /* Фиксируем шапку */
+            bottom: 0; /* Прикрепляем к верхней части */
+            left: 0; /* Растягиваем на всю ширину */
+            right: 0;
+            z-index: 1000; /* Поверх других элементов */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Тень под шапкой */
+        }
+
+        footer a {
+            color: #f8f9fa;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: #f1c40f;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Магазин</h1>
+        <a href="{% url 'cart_view' %}" class="btn-cart">Корзина</a>
+    </header>
+
+    <main>
+        <h1>Карточка товара</h1>
+        <h2>{{ product.name }}</h2>
+        <div>
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 300px; height: 300px; object-fit: contain;">
+            {% else %}
+                <img src="https://via.placeholder.com/300" alt="Нет изображения" style="width: 300px; height: 300px;">
+            {% endif %}
+        </div>
+        <p><strong>Описание:</strong> {{ product.description }}</p>
+        <p><strong>Цена:</strong> {{ product.price }} ₽</p>
+    
+        <!-- Форма для добавления товара в корзину -->
+        <form action="{% url 'add_to_cart' product.id %}" method="post">
+            {% csrf_token %}
+            <button class="btn-add" type="submit">Добавить в корзину</button>
+        </form>
+    
+        <form action="/">
+            <button class="btn-back" type="submit">Вернуться к каталогу</button>
+        </form>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Интернет-магазин. Все права защищены.</p>
+        <p><a href="mailto:info@example.com">Связаться с нами</a></p>
+    </footer>
+</body>
+</html>

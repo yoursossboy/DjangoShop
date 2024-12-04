@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Оформление заказа</h1>
+    <p>Общая сумма: {{ total_price }} ₽</p>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit">Подтвердить заказ</button>
+    </form>
+</body>
+</html>
