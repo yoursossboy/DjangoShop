@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Category, Product
+from .models import Category, Product, Order, OrderItem
+from .forms import OrderForm
 from django.shortcuts import render, redirect
 from .models import Product
 from .cart import add_to_cart, remove_from_cart, get_cart_items, get_total_price
+import requests
 
 def product_list(request):
     # Получаем все категории
@@ -53,3 +55,64 @@ def cart_view(request):
     cart = get_cart_items(request)
     total_price = get_total_price(request)
     return render(request, 'catalog/cart.html', {'cart': cart, 'total_price': total_price})
+
+def send_order_to_1c(order):
+    url = "http://localhost:8080/заказ"  # URL веб-сервиса 1С
+    data = {
+        "НомерЗаказа": order.id,
+        "Имя": order.name,
+        "Почта": order.email,
+        "СоставЗаказа": order.get_items()  # Получаем состав заказа
+    }
+    response = requests.post(url, data=data)
+
+    if response.status_code == 200:
+        return True
+    else:
+        return False
+
+def create_order(request):
+    # Получаем товары из корзины
+    cart = request.session.get('cart', {})
+    if not cart:
+        return redirect('product_list')
+
+    if request.method == 'POST':
+        form = OrderForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+
+            # Создаем заказ
+            order = Order.objects.create(
+                name=name,
+                email=email,
+                total_price=0
+            )
+
+            total_price = 0
+            for product_id, quantity in cart.items():
+                product = Product.objects.get(id=product_id)
+                order_item = OrderItem.objects.create(
+                    order=order,
+                    product=product,
+                    quantity=quantity,
+                    price=product.price
+                )
+                total_price += product.price * quantity
+
+            order.total_price = total_price
+            order.save()
+
+            # Отправляем заказ в 1С
+            send_order_to_1c(order)
+
+            # Очищаем корзину
+            request.session['cart'] = {}
+
+            return render(request, 'order_confirmation.html', {'order': order})
+
+    else:
+        form = OrderForm()
+
+    return render(request, 'create_order.html', {'form': form})
