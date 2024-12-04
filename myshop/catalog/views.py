@@ -10,6 +10,7 @@ from .models import Category, Product, Order, OrderItem
 from .forms import OrderForm
 from .models import Product
 from .serializers import ProductModelSerializer
+from django.views.decorators.csrf import csrf_exempt
 
 class DjangoShopAPIView(APIView):
     def get(self, request):
@@ -82,6 +83,7 @@ def send_order_to_1c(order):
     else:
         return False
 
+@csrf_exempt
 def create_order(request):
     # Получаем товары из корзины
     cart = request.session.get('cart', {})
