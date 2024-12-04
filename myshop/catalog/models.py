@@ -21,9 +21,10 @@ class Order(models.Model):
     name = models.CharField(max_length=100)
     email = models.CharField(max_length=100)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    order_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Заказ {self.id} от {self.created_at}"
+        return f"Заказ {self.id}"
 
     # def total_price(self):
     #     from catalog.models import Product  # Отложенный импорт

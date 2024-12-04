@@ -9,14 +9,25 @@ from .cart import add_to_cart, remove_from_cart, get_cart_items, get_total_price
 from .models import Category, Product, Order, OrderItem
 from .forms import OrderForm
 from .models import Product
-from .serializers import ProductModelSerializer
+from .serializers import ProductSerializer, OrderSerializer
 from django.views.decorators.csrf import csrf_exempt
 
 class DjangoShopAPIView(APIView):
     def get(self, request):
-        data = Product.objects.all()
-        serializer = ProductModelSerializer(data, many=True)
-        return Response(serializer.data)
+        # Получаем данные для продуктов
+        products = Product.objects.all()
+        product_serializer = ProductSerializer(products, many=True)
+
+        # Получаем данные для заказов
+        orders = Order.objects.prefetch_related('order_items').all()
+        order_serializer = OrderSerializer(orders, many=True)
+
+        # Объединяем всё в один JSON-ответ
+        data = {
+            "products": product_serializer.data,
+            "orders": order_serializer.data
+        }
+        return Response(data)
 
 def product_list(request):
     # Получаем все категории
@@ -104,21 +115,20 @@ def create_order(request):
             )
 
             total_price = 0
-            for product_id, quantity in cart.items():
+            for product_id, fields in cart.items():
                 product = Product.objects.get(id=product_id)
                 order_item = OrderItem.objects.create(
                     order=order,
                     product=product,
-                    quantity=quantity,
-                    price=product.price
+                    quantity=fields['quantity'],
                 )
-                total_price += product.price * quantity
+                total_price += product.price * fields['quantity']
 
             order.total_price = total_price
             order.save()
 
             # Отправляем заказ в 1С
-            send_order_to_1c(order)
+            # send_order_to_1c(order)
 
             # Очищаем корзину
             request.session['cart'] = {}
