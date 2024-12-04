@@ -1,10 +1,21 @@
+import requests
+
 from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+from .cart import add_to_cart, remove_from_cart, get_cart_items, get_total_price
 from .models import Category, Product, Order, OrderItem
 from .forms import OrderForm
-from django.shortcuts import render, redirect
 from .models import Product
-from .cart import add_to_cart, remove_from_cart, get_cart_items, get_total_price
-import requests
+from .serializers import ProductModelSerializer
+
+class DjangoShopAPIView(APIView):
+    def get(self, request):
+        data = Product.objects.all()
+        serializer = ProductModelSerializer(data, many=True)
+        return Response(serializer.data)
 
 def product_list(request):
     # Получаем все категории

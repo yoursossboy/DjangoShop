@@ -263,7 +263,7 @@
                 <button class="btn-back" type="submit">Вернуться к каталогу</button>
             </form>
     
-            <form action="checkout/" method="post">
+            <form action="{% url 'create_order' %}" method="post">
                 <button class="btn-add" type="submit">Оформить заказ</button>
             </form>
         </div>
