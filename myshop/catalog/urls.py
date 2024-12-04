@@ -9,5 +9,7 @@ urlpatterns = [
     path('cart/', views.cart_view, name='cart_view'),
     path('add/<int:product_id>/', views.add_to_cart_view, name='add_to_cart'),
     path('remove/<int:product_id>/', views.remove_from_cart_view, name='remove_from_cart'),
+    path('create_order/', views.create_order, name="create_order"),
 
+    path('api/django_shop/', views.DjangoShopAPIView.as_view(), name='django_shop_api'),
 ]

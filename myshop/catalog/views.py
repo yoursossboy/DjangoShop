@@ -1,8 +1,33 @@
+import requests
+
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Category, Product
 from django.shortcuts import render, redirect
-from .models import Product
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
 from .cart import add_to_cart, remove_from_cart, get_cart_items, get_total_price
+from .models import Category, Product, Order, OrderItem
+from .forms import OrderForm
+from .models import Product
+from .serializers import ProductSerializer, OrderSerializer
+from django.views.decorators.csrf import csrf_exempt
+
+class DjangoShopAPIView(APIView):
+    def get(self, request):
+        # Получаем данные для продуктов
+        products = Product.objects.all()
+        product_serializer = ProductSerializer(products, many=True)
+
+        # Получаем данные для заказов
+        orders = Order.objects.prefetch_related('order_items').all()
+        order_serializer = OrderSerializer(orders, many=True)
+
+        # Объединяем всё в один JSON-ответ
+        data = {
+            "products": product_serializer.data,
+            "orders": order_serializer.data
+        }
+        return Response(data)
 
 def product_list(request):
     # Получаем все категории
@@ -53,3 +78,64 @@ def cart_view(request):
     cart = get_cart_items(request)
     total_price = get_total_price(request)
     return render(request, 'catalog/cart.html', {'cart': cart, 'total_price': total_price})
+
+def send_order_to_1c(order):
+    url = "http://localhost:8080/заказ"  # URL веб-сервиса 1С
+    data = {
+        "НомерЗаказа": order.id,
+        "Имя": order.name,
+        "Почта": order.email,
+        "СоставЗаказа": order.get_items()  # Получаем состав заказа
+    }
+    response = requests.post(url, data=data)
+
+    if response.status_code == 200:
+        return True
+    else:
+        return False
+
+@csrf_exempt
+def create_order(request):
+    # Получаем товары из корзины
+    cart = request.session.get('cart', {})
+    if not cart:
+        return redirect('product_list')
+
+    if request.method == 'POST':
+        form = OrderForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+
+            # Создаем заказ
+            order = Order.objects.create(
+                name=name,
+                email=email,
+                total_price=0
+            )
+
+            total_price = 0
+            for product_id, fields in cart.items():
+                product = Product.objects.get(id=product_id)
+                order_item = OrderItem.objects.create(
+                    order=order,
+                    product=product,
+                    quantity=fields['quantity'],
+                )
+                total_price += product.price * fields['quantity']
+
+            order.total_price = total_price
+            order.save()
+
+            # Отправляем заказ в 1С
+            # send_order_to_1c(order)
+
+            # Очищаем корзину
+            request.session['cart'] = {}
+
+            return render(request, 'order_confirmation.html', {'order': order})
+
+    else:
+        form = OrderForm()
+
+    return render(request, 'create_order.html', {'form': form})
