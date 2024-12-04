@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Корзина</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Общие стили для страницы корзины */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Шапка сайта */
+        header {
+            background-color: #343a40;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between; /* Размещение элементов по краям */
+            align-items: center;
+            position: fixed; /* Фиксируем шапку */
+            top: 0; /* Прикрепляем к верхней части */
+            left: 0; /* Растягиваем на всю ширину */
+            right: 0;
+            z-index: 1000; /* Поверх других элементов */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Тень под шапкой */
+        }
+
+        header h1 {
+            color: white;
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .btn-cart {
+            background-color: #f1c40f;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 16px;
+            display: inline-block;
+        }
+
+        .btn-cart:hover {
+            background-color: #f39c12;
+        }
+
+        /* Добавляем отступ сверху для содержимого, чтобы шапка не перекрывала его */
+        main {
+            margin-top: 50px; /* Отступ для учета высоты шапки */
+            padding: 20px;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        .cart-items {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .cart-item img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            margin-right: 20px;
+        }
+
+        .cart-item-info {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-item-info h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .cart-item-info p {
+            color: #555;
+        }
+
+        .remove-item {
+            color: #ff6b6b;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .remove-item:hover {
+            text-decoration: underline;
+        }
+
+        .total-price {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: right;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        .cart-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .cart-actions a {
+            text-decoration: none;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .cart-actions a:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-add {
+            background-color: #57c257;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            margin-top: 10px;
+            display: block;
+        }
+
+        .btn-add:hover {
+            background-color: #43b143;
+        }
+
+        .btn-back {
+            background-color: #d55d4d;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            margin-top: 10px;
+            display: block;
+        }
+
+        .btn-back:hover {
+            background-color: #b04234;
+        }
+
+        /* Стили для футера */
+        footer {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            position: fixed; /* Фиксируем шапку */
+            bottom: 0; /* Прикрепляем к верхней части */
+            left: 0; /* Растягиваем на всю ширину */
+            right: 0;
+            z-index: 1000; /* Поверх других элементов */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Тень под шапкой */
+        }
+
+        footer a {
+            color: #f8f9fa;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: #f1c40f;
+        }
+    </style>
+</head>
+<body>
+    <!-- Шапка сайта -->
+    <header>
+        <h1>Магазин</h1>
+        <a href="{% url 'cart_view' %}" class="btn-cart">Корзина</a>
+    </header>
+
+    <main>
+
+        <div class="container">
+    
+            <h1>Корзина</h1>
+            
+            {% if cart %}
+                <!-- <ul>
+                    {% for product_id, item in cart.items %}
+                        <li>
+                            <img src="{{ item.image }}" alt="{{ item.name }}" style="width: 100px; height: 100px;">
+                            <h3>{{ item.name }}</h3>
+                            <p>Цена: {{ item.price }} ₽</p>
+                            <p>Количество: {{ item.quantity }}</p>
+                            <a href="{% url 'remove_from_cart' product_id %}">Удалить из корзины</a>
+                        </li>
+                    {% endfor %}
+                </ul> -->
+    
+                <div class="cart-items">
+                    {% for product_id, item in cart.items %}
+                        <div class="cart-item">
+                            <img src="{{ item.image }}" alt="{{ item.name }}">
+                            <div class="cart-item-info">
+                                <div>
+                                    <h3>{{ item.name }}</h3>
+                                    <p>{{ item.price }} ₽</p>
+                                    <p>Количество: {{ item.quantity }}</p>
+                                </div>
+                                <div>
+                                    <a href="{% url 'remove_from_cart' product_id %}" class="remove-item">Удалить</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+    
+                <h3>Общая стоимость: {{ total_price }} ₽</h3>
+            {% else %}
+                <p>Ваша корзина пуста.</p>
+            {% endif %}
+            
+            <form action="/">
+                <button class="btn-back" type="submit">Вернуться к каталогу</button>
+            </form>
+    
+            <form action="checkout/" method="post">
+                <button class="btn-add" type="submit">Оформить заказ</button>
+            </form>
+        </div>
+    </main>
+    <!-- Футер -->
+    <footer>
+        <p>&copy; 2024 Интернет-магазин. Все права защищены.</p>
+        <p><a href="mailto:info@example.com">Связаться с нами</a></p>
+    </footer>
+</body>
+</html>
