@@ -18,16 +18,16 @@ class Product(models.Model):
         return self.name
 
 class Order(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, default='Ожидает оплаты')
+    name = models.CharField(max_length=100)
+    email = models.CharField(max_length=100)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
         return f"Заказ {self.id} от {self.created_at}"
 
-    def total_price(self):
-        from catalog.models import Product  # Отложенный импорт
-        return sum(item.total_price() for item in self.order_items.all())
+    # def total_price(self):
+    #     from catalog.models import Product  # Отложенный импорт
+    #     return sum(item.total_price() for item in self.order_items.all())
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name="order_items", on_delete=models.CASCADE)
